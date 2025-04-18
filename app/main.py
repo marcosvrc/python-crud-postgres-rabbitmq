@@ -16,8 +16,8 @@ def create_task(task: schemas.TaskCreate, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(db_task)
     
-    # Publica evento no RabbitMQ
-    rabbitmq_service.publish_event("task_created", db_task.__dict__)
+    # Publica evento no RabbitMQ usando o método to_dict
+    rabbitmq_service.publish_event("task_created", db_task.to_dict())
     
     return db_task
 
@@ -45,8 +45,8 @@ def update_task(task_id: int, task: schemas.TaskCreate, db: Session = Depends(ge
     db.commit()
     db.refresh(db_task)
     
-    # Publica evento no RabbitMQ
-    rabbitmq_service.publish_event("task_updated", db_task.__dict__)
+    # Publica evento no RabbitMQ usando o método to_dict
+    rabbitmq_service.publish_event("task_updated", db_task.to_dict())
     
     return db_task
 
