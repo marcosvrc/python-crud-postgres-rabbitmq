@@ -26,6 +26,8 @@ Este projeto é uma API CRUD (Create, Read, Update, Delete) desenvolvida com Fas
 │   └── consumer.py       # Consumidor de eventos RabbitMQ
 ├── postman/
 │   └── task_api_collection.json  # Collection para Postman/Insomnia
+├── openapi/
+│   └── task-api-spec.yaml        # Especificação OpenAPI 3.1.1
 ├── docker-compose.yml
 ├── Dockerfile
 ├── requirements.txt
@@ -52,6 +54,24 @@ docker-compose up -d
 5. Para acessar o RabbitMQ Management: http://localhost:15672
    - Usuário: admin
    - Senha: admin123
+
+## Documentação da API
+
+### Swagger UI
+A documentação interativa da API está disponível em:
+- Swagger UI: http://localhost:8000/docs
+- ReDoc: http://localhost:8000/redoc
+
+### Especificação OpenAPI
+A especificação completa da API no formato OpenAPI 3.1.1 está disponível em:
+```
+openapi/task-api-spec.yaml
+```
+
+Para visualizar a especificação, você pode:
+1. Copiar o conteúdo do arquivo para o [Editor Swagger](https://editor.swagger.io/)
+2. Importar o arquivo em ferramentas como Postman ou Insomnia
+3. Usar ferramentas de linha de comando como `swagger-cli`
 
 ## Collection Postman/Insomnia
 
