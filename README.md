@@ -24,6 +24,8 @@ Este projeto é uma API CRUD (Create, Read, Update, Delete) desenvolvida com Fas
 │   ├── schemas.py        # Schemas Pydantic
 │   ├── rabbitmq.py       # Serviço RabbitMQ
 │   └── consumer.py       # Consumidor de eventos RabbitMQ
+├── postman/
+│   └── task_api_collection.json  # Collection para Postman/Insomnia
 ├── docker-compose.yml
 ├── Dockerfile
 ├── requirements.txt
@@ -50,6 +52,27 @@ docker-compose up -d
 5. Para acessar o RabbitMQ Management: http://localhost:15672
    - Usuário: admin
    - Senha: admin123
+
+## Collection Postman/Insomnia
+
+Para facilitar o teste da API, disponibilizamos uma collection com todos os endpoints configurados. Você pode encontrá-la em:
+
+```
+postman/task_api_collection.json
+```
+
+Para usar a collection:
+
+1. No Postman:
+   - Clique em "Import"
+   - Selecione o arquivo `task_api_collection.json`
+   - A collection "Task API" será importada com todos os endpoints
+
+2. No Insomnia:
+   - Clique em "Create"
+   - Selecione "Import From File"
+   - Escolha o arquivo `task_api_collection.json`
+   - A collection será importada automaticamente
 
 ## Endpoints da API
 
