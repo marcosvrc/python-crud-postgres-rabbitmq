@@ -1,0 +1,257 @@
+openapi: 3.1.1
+info:
+  title: Task API
+  description: |
+    API CRUD de Tarefas com PostgreSQL e RabbitMQ.
+    
+    Esta API permite:
+    * Criar tarefas
+    * Listar tarefas
+    * Buscar tarefas por ID
+    * Atualizar tarefas
+    * Deletar tarefas
+    
+    Cada operação CRUD gera eventos no RabbitMQ para processamento assíncrono.
+  version: 1.0.0
+  contact:
+    name: Marcos Vinício
+    url: https://github.com/marcosvrc/python-crud-postgres-rabbitmq
+
+servers:
+  - url: http://localhost:8000
+    description: Local Development Server
+
+tags:
+  - name: tasks
+    description: Operações relacionadas a tarefas
+
+paths:
+  /tasks/:
+    post:
+      tags:
+        - tasks
+      summary: Criar nova tarefa
+      description: Cria uma nova tarefa e publica um evento 'task_created' no RabbitMQ
+      operationId: createTask
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TaskCreate'
+            example:
+              title: "Minha Tarefa"
+              description: "Descrição da minha tarefa"
+              completed: false
+      responses:
+        '201':
+          description: Tarefa criada com sucesso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Task'
+        '422':
+          description: Erro de validação
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    
+    get:
+      tags:
+        - tasks
+      summary: Listar tarefas
+      description: Retorna uma lista paginada de tarefas
+      operationId: listTasks
+      parameters:
+        - name: skip
+          in: query
+          description: Número de registros para pular (paginação)
+          required: false
+          schema:
+            type: integer
+            default: 0
+            minimum: 0
+        - name: limit
+          in: query
+          description: Número máximo de registros para retornar
+          required: false
+          schema:
+            type: integer
+            default: 100
+            maximum: 100
+      responses:
+        '200':
+          description: Lista de tarefas retornada com sucesso
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Task'
+
+  /tasks/{task_id}:
+    parameters:
+      - name: task_id
+        in: path
+        description: ID da tarefa
+        required: true
+        schema:
+          type: integer
+    
+    get:
+      tags:
+        - tasks
+      summary: Buscar tarefa por ID
+      description: Retorna uma tarefa específica pelo ID
+      operationId: getTask
+      responses:
+        '200':
+          description: Tarefa encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Task'
+        '404':
+          description: Tarefa não encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    
+    put:
+      tags:
+        - tasks
+      summary: Atualizar tarefa
+      description: Atualiza uma tarefa existente e publica um evento 'task_updated' no RabbitMQ
+      operationId: updateTask
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TaskCreate'
+      responses:
+        '200':
+          description: Tarefa atualizada com sucesso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Task'
+        '404':
+          description: Tarefa não encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: Erro de validação
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    
+    delete:
+      tags:
+        - tasks
+      summary: Deletar tarefa
+      description: Remove uma tarefa e publica um evento 'task_deleted' no RabbitMQ
+      operationId: deleteTask
+      responses:
+        '200':
+          description: Tarefa deletada com sucesso
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Task deleted successfully"
+        '404':
+          description: Tarefa não encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+components:
+  schemas:
+    TaskBase:
+      type: object
+      properties:
+        title:
+          type: string
+          description: Título da tarefa
+          example: "Minha Tarefa"
+        description:
+          type: string
+          nullable: true
+          description: Descrição detalhada da tarefa
+          example: "Descrição da minha tarefa"
+        completed:
+          type: boolean
+          description: Status de conclusão da tarefa
+          default: false
+      required:
+        - title
+
+    TaskCreate:
+      allOf:
+        - $ref: '#/components/schemas/TaskBase'
+
+    Task:
+      allOf:
+        - $ref: '#/components/schemas/TaskBase'
+        - type: object
+          properties:
+            id:
+              type: integer
+              description: ID único da tarefa
+              example: 1
+            created_at:
+              type: string
+              format: date-time
+              description: Data e hora de criação
+            updated_at:
+              type: string
+              format: date-time
+              nullable: true
+              description: Data e hora da última atualização
+          required:
+            - id
+            - created_at
+
+    Error:
+      type: object
+      properties:
+        detail:
+          type: string
+          description: Mensagem de erro
+          example: "Task not found"
+
+    ValidationError:
+      type: object
+      properties:
+        loc:
+          type: array
+          items:
+            type: string
+          description: Localização do erro
+          example: ["body", "title"]
+        msg:
+          type: string
+          description: Mensagem de erro
+          example: "field required"
+        type:
+          type: string
+          description: Tipo do erro
+          example: "value_error.missing"
+
+    HTTPValidationError:
+      type: object
+      properties:
+        detail:
+          type: array
+          items:
+            $ref: '#/components/schemas/ValidationError'
